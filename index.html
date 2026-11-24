@@ -1,0 +1,966 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+  <title>CAMPUS AR NAVIGATION | Explore Your Campus. Navigate Smarter.</title>
+  
+  <!-- Meta & App Capabilities -->
+  <meta name="description" content="Production-style college campus navigation web application combining GPS, live camera-based Three.js Augmented Reality, indoor pathway graph navigation, and administrator dashboard.">
+  <meta name="theme-color" content="#060b14">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+
+  <!-- Google Typography -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Outfit:wght@500;600;700;800;900&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+
+
+  <!-- Leaflet map styles (loaded before the app theme so custom styles win) -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.css">
+
+  <!-- Application Stylesheet -->
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+  <!-- Master Application Root -->
+  <div id="app-root">
+
+    <!-- Top Navigation Header -->
+    <header class="navbar">
+      <div class="nav-brand" onclick="window.app.switchView('home')">
+        <div class="brand-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+            <polygon points="12 2 19 21 12 17 5 21 12 2"></polygon>
+          </svg>
+        </div>
+        <div class="brand-text">
+          <h1>CAMPUS AR NAVIGATION</h1>
+          <span class="tagline-small">Explore Your Campus. Navigate Smarter.</span>
+        </div>
+      </div>
+
+      <nav class="nav-actions">
+        <div class="gps-status-badge" id="navbar-gps-status">
+          <span class="pulse-dot"></span> GPS Acquiring...
+        </div>
+
+        <button class="nav-btn active" data-view="home" title="Campus Home">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path><polyline points="9 22 9 12 15 12 15 22"></polyline></svg>
+          <span>Home</span>
+        </button>
+
+        <button class="nav-btn" data-view="search" title="Destinations">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+          <span>Destinations</span>
+        </button>
+
+        <button class="nav-btn" data-view="ar" id="nav-btn-ar" title="Live AR Navigation">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"></path><circle cx="12" cy="13" r="4"></circle></svg>
+          <span>Live AR</span>
+        </button>
+
+        <button class="nav-btn" data-view="admin" title="Admin Portal">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect><path d="M7 11V7a5 5 0 0 1 10 0v4"></path></svg>
+          <span>Admin</span>
+        </button>
+      </nav>
+    </header>
+
+    <!-- ======================================================= -->
+    <!-- VIEW 1: HOME PAGE                                       -->
+    <!-- ======================================================= -->
+    <main id="view-home" class="view-container active">
+      <section class="hero-section">
+        <div class="hero-content">
+          <div class="badge-tag">
+            <span class="pulse-dot"></span> Next-Gen Spatial Campus Wayfinding
+          </div>
+          <h2 class="hero-title">CAMPUS <span class="highlight">AR NAVIGATION</span></h2>
+          <p class="hero-tagline">"Explore Your Campus. Navigate Smarter."</p>
+          <p class="hero-description">
+            Experience next-generation college campus navigation combining high-precision GPS positioning, live camera-based Three.js Augmented Reality, and intelligent indoor pathway routing.
+          </p>
+
+          <div class="hero-cta-group">
+            <button class="btn-primary" id="home-btn-start-nav">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polygon points="5 3 19 12 5 21 5 3"></polygon></svg>
+              Start Navigation
+            </button>
+          </div>
+        </div>
+
+        <!-- Primary Navigation Card -->
+        <div class="primary-cards-grid">
+          <!-- LIVE AR NAVIGATION -->
+          <div class="primary-nav-card" id="card-launch-ar">
+            <span class="card-badge">Three.js 3D Spatial Guidance</span>
+            <div class="card-icon-wrap">
+              <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"></path><circle cx="12" cy="13" r="4"></circle></svg>
+            </div>
+            <h3 class="card-title">LIVE AR NAVIGATION</h3>
+            <p class="card-desc">
+              Camera-based augmented reality HUD rendering 3D directional arrows, device orientation compass heading, and visual landmark positioning.
+            </p>
+            <div class="card-action-link">
+              <span>Launch AR Camera HUD</span>
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="5" y1="12" x2="19" y2="12"></line><polyline points="12 5 19 12 12 19"></polyline></svg>
+            </div>
+          </div>
+        </div>
+
+      </section>
+    </main>
+
+    <!-- ======================================================= -->
+    <!-- VIEW 2: DESTINATION SEARCH & ALL 10 LOCATIONS           -->
+    <!-- ======================================================= -->
+    <section id="view-search" class="view-container">
+      <div class="search-view-container">
+        <div class="section-header">
+          <h2 class="section-title">Select Campus Destination</h2>
+          <p class="section-subtitle">Search or select any of the 10 predefined campus locations</p>
+        </div>
+
+        <!-- Search Bar with Live Filter -->
+        <div class="search-box-wrap">
+          <div class="search-input-inner">
+            <svg class="search-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+            <input type="text" id="destination-search-input" class="search-input" placeholder="Search classrooms, library, faculty cabins, offices..." autocomplete="off">
+            <button id="clear-search-btn" class="clear-search-btn" title="Clear Search">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+            </button>
+          </div>
+        </div>
+
+        <!-- Category Pills -->
+        <div class="category-pills">
+          <button class="category-pill active" data-category="all">All Locations (<span id="category-all-count">10</span>)</button>
+          <button class="category-pill" data-category="Academic">Academic Classrooms</button>
+          <button class="category-pill" data-category="Administrative">Administrative Offices</button>
+          <button class="category-pill" data-category="Faculty">Faculty & Staff</button>
+          <button class="category-pill" data-category="Resource Center">Library & Study</button>
+          <button class="category-pill" data-category="Auditorium">Auditorium & Halls</button>
+          <button class="category-pill" data-category="Restroom">Restrooms & Facilities</button>
+        </div>
+
+        <!-- Destinations Cards Grid -->
+        <div class="destinations-grid" id="destinations-cards-grid">
+          <!-- Destination 1: Wash room -->
+          <div class="dest-card" data-id="loc_1">
+            <div class="dest-header"><h3 class="dest-name">Wash room</h3><span class="dest-badge">Restroom</span></div>
+            <div class="dest-location-meta">
+              <div class="meta-row"><span>Main Academic Block</span></div>
+              <div class="meta-row"><span>Ground Floor</span></div>
+            </div>
+            <p class="dest-desc">Campus executive and student restrooms with modern hygiene facilities.</p>
+            <div class="dest-coordinates">📍 Lat: 13.337356, Lon: 77.131155</div>
+            <div class="dest-distance-bar">
+              <div class="distance-metric"><span class="card-dist-txt">Calculating...</span></div>
+              <div class="walking-metric card-time-txt">1 min walk</div>
+            </div>
+            <div class="dest-actions">
+              <button class="action-btn-ar" onclick="window.app.startNavigation('loc_1', 'ar')">Live AR</button>
+            </div>
+          </div>
+
+          <!-- Destination 2: 3rd year BCA class room -->
+          <div class="dest-card" data-id="loc_2">
+            <div class="dest-header"><h3 class="dest-name">3rd year BCA class room</h3><span class="dest-badge">Academic</span></div>
+            <div class="dest-location-meta">
+              <div class="meta-row"><span>Computer Applications Wing</span></div>
+              <div class="meta-row"><span>2nd Floor</span></div>
+            </div>
+            <p class="dest-desc">Final Year BCA Lecture Hall equipped with interactive smart board and tiered seating.</p>
+            <div class="dest-coordinates">📍 Lat: 13.336996, Lon: 77.130134</div>
+            <div class="dest-distance-bar">
+              <div class="distance-metric"><span class="card-dist-txt">Calculating...</span></div>
+              <div class="walking-metric card-time-txt">1 min walk</div>
+            </div>
+            <div class="dest-actions">
+              <button class="action-btn-ar" onclick="window.app.startNavigation('loc_2', 'ar')">Live AR</button>
+            </div>
+          </div>
+
+          <!-- Destination 3: 2nd BCA year class room -->
+          <div class="dest-card" data-id="loc_3">
+            <div class="dest-header"><h3 class="dest-name">2nd BCA year class room</h3><span class="dest-badge">Academic</span></div>
+            <div class="dest-location-meta">
+              <div class="meta-row"><span>Computer Applications Wing</span></div>
+              <div class="meta-row"><span>1st Floor</span></div>
+            </div>
+            <p class="dest-desc">Second Year BCA Lecture Hall featuring multimedia teaching aids.</p>
+            <div class="dest-coordinates">📍 Lat: 13.336973, Lon: 77.130062</div>
+            <div class="dest-distance-bar">
+              <div class="distance-metric"><span class="card-dist-txt">Calculating...</span></div>
+              <div class="walking-metric card-time-txt">1 min walk</div>
+            </div>
+            <div class="dest-actions">
+              <button class="action-btn-ar" onclick="window.app.startNavigation('loc_3', 'ar')">Live AR</button>
+            </div>
+          </div>
+
+          <!-- Destination 4: 1st year BCA class room -->
+          <div class="dest-card" data-id="loc_4">
+            <div class="dest-header"><h3 class="dest-name">1st year BCA class room</h3><span class="dest-badge">Academic</span></div>
+            <div class="dest-location-meta">
+              <div class="meta-row"><span>Computer Applications Wing</span></div>
+              <div class="meta-row"><span>Ground Floor</span></div>
+            </div>
+            <p class="dest-desc">First Year Foundation Lecture Room with modern ergonomics and dual whiteboards.</p>
+            <div class="dest-coordinates">📍 Lat: 13.336754, Lon: 77.129898</div>
+            <div class="dest-distance-bar">
+              <div class="distance-metric"><span class="card-dist-txt">Calculating...</span></div>
+              <div class="walking-metric card-time-txt">1 min walk</div>
+            </div>
+            <div class="dest-actions">
+              <button class="action-btn-ar" onclick="window.app.startNavigation('loc_4', 'ar')">Live AR</button>
+            </div>
+          </div>
+
+          <!-- Destination 5: Seminar hall -->
+          <div class="dest-card" data-id="loc_5">
+            <div class="dest-header"><h3 class="dest-name">Seminar hall</h3><span class="dest-badge">Auditorium</span></div>
+            <div class="dest-location-meta">
+              <div class="meta-row"><span>Central Auditorium Complex</span></div>
+              <div class="meta-row"><span>Ground Floor</span></div>
+            </div>
+            <p class="dest-desc">Air-conditioned auditorium for guest lectures, hackathons, and technical symposiums.</p>
+            <div class="dest-coordinates">📍 Lat: 13.336954, Lon: 77.130111</div>
+            <div class="dest-distance-bar">
+              <div class="distance-metric"><span class="card-dist-txt">Calculating...</span></div>
+              <div class="walking-metric card-time-txt">1 min walk</div>
+            </div>
+            <div class="dest-actions">
+              <button class="action-btn-ar" onclick="window.app.startNavigation('loc_5', 'ar')">Live AR</button>
+            </div>
+          </div>
+
+          <!-- Destination 6: Staff room -->
+          <div class="dest-card" data-id="loc_6">
+            <div class="dest-header"><h3 class="dest-name">Staff room</h3><span class="dest-badge">Faculty</span></div>
+            <div class="dest-location-meta">
+              <div class="meta-row"><span>Main Academic Block</span></div>
+              <div class="meta-row"><span>1st Floor</span></div>
+            </div>
+            <p class="dest-desc">BCA & Computer Science faculty workstation cabins and student consultation counters.</p>
+            <div class="dest-coordinates">📍 Lat: 13.336816, Lon: 77.130138</div>
+            <div class="dest-distance-bar">
+              <div class="distance-metric"><span class="card-dist-txt">Calculating...</span></div>
+              <div class="walking-metric card-time-txt">1 min walk</div>
+            </div>
+            <div class="dest-actions">
+              <button class="action-btn-ar" onclick="window.app.startNavigation('loc_6', 'ar')">Live AR</button>
+            </div>
+          </div>
+
+          <!-- Destination 7: Meeting room -->
+          <div class="dest-card" data-id="loc_7">
+            <div class="dest-header"><h3 class="dest-name">Meeting room</h3><span class="dest-badge">Administrative</span></div>
+            <div class="dest-location-meta">
+              <div class="meta-row"><span>Administrative Wing</span></div>
+              <div class="meta-row"><span>1st Floor</span></div>
+            </div>
+            <p class="dest-desc">Executive conference room with presentation screens and circular boardroom table.</p>
+            <div class="dest-coordinates">📍 Lat: 13.337001, Lon: 77.130134</div>
+            <div class="dest-distance-bar">
+              <div class="distance-metric"><span class="card-dist-txt">Calculating...</span></div>
+              <div class="walking-metric card-time-txt">1 min walk</div>
+            </div>
+            <div class="dest-actions">
+              <button class="action-btn-ar" onclick="window.app.startNavigation('loc_7', 'ar')">Live AR</button>
+            </div>
+          </div>
+
+          <!-- Destination 8: Principal -->
+          <div class="dest-card" data-id="loc_8">
+            <div class="dest-header"><h3 class="dest-name">Principal</h3><span class="dest-badge">Administrative</span></div>
+            <div class="dest-location-meta">
+              <div class="meta-row"><span>Administrative Wing</span></div>
+              <div class="meta-row"><span>Ground Floor</span></div>
+            </div>
+            <p class="dest-desc">Office of the College Principal and executive administration suite with reception lounge.</p>
+            <div class="dest-coordinates">📍 Lat: 13.337017, Lon: 77.130165</div>
+            <div class="dest-distance-bar">
+              <div class="distance-metric"><span class="card-dist-txt">Calculating...</span></div>
+              <div class="walking-metric card-time-txt">1 min walk</div>
+            </div>
+            <div class="dest-actions">
+              <button class="action-btn-ar" onclick="window.app.startNavigation('loc_8', 'ar')">Live AR</button>
+            </div>
+          </div>
+
+          <!-- Destination 9: Library -->
+          <div class="dest-card" data-id="loc_9">
+            <div class="dest-header"><h3 class="dest-name">Library</h3><span class="dest-badge">Resource Center</span></div>
+            <div class="dest-location-meta">
+              <div class="meta-row"><span>Central Library Block</span></div>
+              <div class="meta-row"><span>Ground Floor</span></div>
+            </div>
+            <p class="dest-desc">Central campus library containing physical books, digital catalog terminals, and study zones.</p>
+            <div class="dest-coordinates">📍 Lat: 13.337043, Lon: 77.130291</div>
+            <div class="dest-distance-bar">
+              <div class="distance-metric"><span class="card-dist-txt">Calculating...</span></div>
+              <div class="walking-metric card-time-txt">1 min walk</div>
+            </div>
+            <div class="dest-actions">
+              <button class="action-btn-ar" onclick="window.app.startNavigation('loc_9', 'ar')">Live AR</button>
+            </div>
+          </div>
+
+          <!-- Destination 10: Academic director office room -->
+          <div class="dest-card" data-id="loc_10">
+            <div class="dest-header"><h3 class="dest-name">Academic director office room</h3><span class="dest-badge">Administrative</span></div>
+            <div class="dest-location-meta">
+              <div class="meta-row"><span>Administrative Wing</span></div>
+              <div class="meta-row"><span>1st Floor</span></div>
+            </div>
+            <p class="dest-desc">Office of the Academic Director overseeing curriculum development and examinations.</p>
+            <div class="dest-coordinates">📍 Lat: 13.336810, Lon: 77.130165</div>
+            <div class="dest-distance-bar">
+              <div class="distance-metric"><span class="card-dist-txt">Calculating...</span></div>
+              <div class="walking-metric card-time-txt">1 min walk</div>
+            </div>
+            <div class="dest-actions">
+              <button class="action-btn-ar" onclick="window.app.startNavigation('loc_10', 'ar')">Live AR</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ======================================================= -->
+    <!-- VIEW 3: GPS MAP NAVIGATION FULLSCREEN                   -->
+    <!-- ======================================================= -->
+    <section id="view-map" class="view-container">
+      <div class="map-view-fullscreen">
+        <div id="leaflet-map"></div>
+
+        <!-- Turn-by-turn guidance banner -->
+        <div class="map-nav-hud-top">
+          <div class="hud-instruction-card">
+            <div class="maneuver-icon-box" id="map-hud-icon">
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><line x1="12" y1="19" x2="12" y2="5"></line><polyline points="5 12 12 5 19 12"></polyline></svg>
+            </div>
+            <div class="instruction-text-group">
+              <div class="instruction-maneuver" id="map-hud-maneuver">Choose a destination</div>
+              <div class="instruction-sub" id="map-hud-sub">Open the Destinations tab or tap any campus pin to start GPS guidance.</div>
+            </div>
+            <button class="hud-close-btn" onclick="window.app.switchView('search')" title="Close map">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+            </button>
+          </div>
+        </div>
+
+        <!-- Distance, time and mode switch -->
+        <div class="map-nav-hud-bottom">
+          <div class="nav-bottom-panel">
+            <div class="nav-metrics">
+              <div class="metric-item">
+                <span class="metric-val" id="map-hud-dist">— m</span>
+                <span class="metric-lbl">Distance</span>
+              </div>
+              <div class="metric-item">
+                <span class="metric-val" id="map-hud-time">— min</span>
+                <span class="metric-lbl">Walking Time</span>
+              </div>
+            </div>
+            <div class="nav-action-buttons">
+              <button class="btn-switch-ar" onclick="window.app.switchToAR()">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"></path><circle cx="12" cy="13" r="4"></circle></svg>
+                Switch to Live AR
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Floating map controls -->
+        <div class="map-floating-controls">
+          <button class="map-control-btn" onclick="window.campusMapManager.reCenterUser()" title="Re-center on my location">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"></circle><path d="M12 2v3M12 19v3M2 12h3M19 12h3"></path></svg>
+          </button>
+        </div>
+      </div>
+    </section>
+
+    <!-- ======================================================= -->
+    <!-- VIEW 4: LIVE AR NAVIGATION FULLSCREEN                   -->
+    <!-- ======================================================= -->
+    <section id="view-ar" class="view-container">
+      <div class="ar-view-fullscreen">
+        <!-- Real-Time Camera Feed -->
+        <video id="ar-video-feed" playsinline autoplay muted></video>
+
+        <!-- Three.js 3D Arrow Canvas -->
+        <canvas id="ar-three-canvas"></canvas>
+
+        <!-- Camera-Based Visual Landmark Reticle -->
+        <div class="ar-reticle-overlay" id="ar-reticle">
+          <div class="reticle-corner reticle-tl"></div>
+          <div class="reticle-corner reticle-tr"></div>
+          <div class="reticle-corner reticle-bl"></div>
+          <div class="reticle-corner reticle-br"></div>
+        </div>
+
+        <!-- Top Compass & Tracking Status HUD -->
+        <div class="ar-hud-top">
+          <div class="ar-status-row">
+            <div class="ar-badge-pill" id="ar-tracking-status-pill">
+              <span class="pulse-dot"></span> Visual Scanner Active
+            </div>
+            <div class="ar-badge-pill" id="ar-webxr-status">
+              Three.js AR Ready
+            </div>
+          </div>
+
+          <!-- Compass Tape -->
+          <div class="compass-tape-container">
+            <span class="compass-cardinal" id="ar-compass-cardinal">N</span>
+            <span class="compass-degrees" id="ar-compass-deg">0°</span>
+            <span style="color: var(--text-muted); font-size: 0.75rem;">LIVE HEADING</span>
+          </div>
+
+          <!-- Destination Banner -->
+          <div class="ar-dest-banner">
+            <div>
+              <div class="ar-dest-title" id="ar-hud-dest-title">Select Destination</div>
+              <div class="ar-dest-sub" id="ar-hud-dest-sub">Computing topological path...</div>
+            </div>
+            <div class="ar-distance-badge">
+              <div class="ar-dist-val" id="ar-hud-dist-val">-- m</div>
+              <div class="ar-dist-lbl">To Target</div>
+            </div>
+          </div>
+
+          <!-- Visual Tracking Confidence Bar -->
+          <div class="ar-tracking-bar">
+            <div class="confidence-progress-bg">
+              <div class="confidence-progress-fill" id="ar-confidence-fill"></div>
+            </div>
+            <span class="confidence-label" id="ar-confidence-text">Visual Landmark Confidence: 85%</span>
+          </div>
+        </div>
+
+        <!-- Bottom Turn-by-Turn Guidance HUD -->
+        <div class="ar-hud-bottom">
+          <!-- In-Screen AR Destination Quick Selector Tray -->
+          <div class="ar-destinations-tray" id="ar-destinations-tray">
+            <div class="ar-tray-header">
+              <span>📍 Select Campus Destination:</span>
+              <span style="font-size: 0.72rem; color: var(--text-muted); cursor: pointer;" onclick="window.app.openARDestinationPicker()">View All 10 ↗</span>
+            </div>
+            <div class="ar-tray-chips" id="ar-tray-chips">
+              <button type="button" class="ar-tray-chip" data-id="loc_1" onclick="window.app.startNavigation('loc_1', 'ar')"><span>🚻</span><span>Wash room</span></button>
+              <button type="button" class="ar-tray-chip" data-id="loc_2" onclick="window.app.startNavigation('loc_2', 'ar')"><span>🎓</span><span>3rd year BCA class room</span></button>
+              <button type="button" class="ar-tray-chip" data-id="loc_3" onclick="window.app.startNavigation('loc_3', 'ar')"><span>🎓</span><span>2nd BCA year class room</span></button>
+              <button type="button" class="ar-tray-chip" data-id="loc_4" onclick="window.app.startNavigation('loc_4', 'ar')"><span>🎓</span><span>1st year BCA class room</span></button>
+              <button type="button" class="ar-tray-chip" data-id="loc_5" onclick="window.app.startNavigation('loc_5', 'ar')"><span>🏛️</span><span>Seminar hall</span></button>
+              <button type="button" class="ar-tray-chip" data-id="loc_6" onclick="window.app.startNavigation('loc_6', 'ar')"><span>👨‍🏫</span><span>Staff room</span></button>
+              <button type="button" class="ar-tray-chip" data-id="loc_7" onclick="window.app.startNavigation('loc_7', 'ar')"><span>💼</span><span>Meeting room</span></button>
+              <button type="button" class="ar-tray-chip" data-id="loc_8" onclick="window.app.startNavigation('loc_8', 'ar')"><span>🎖️</span><span>Principal</span></button>
+              <button type="button" class="ar-tray-chip" data-id="loc_9" onclick="window.app.startNavigation('loc_9', 'ar')"><span>📚</span><span>Library</span></button>
+              <button type="button" class="ar-tray-chip" data-id="loc_10" onclick="window.app.startNavigation('loc_10', 'ar')"><span>🏛️</span><span>Academic director office room</span></button>
+            </div>
+          </div>
+
+          <div class="ar-instruction-card">
+            <div class="ar-maneuver-icon">
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polygon points="12 2 19 21 12 17 5 21 12 2"></polygon></svg>
+            </div>
+            <div class="ar-instruction-text">
+              <div class="ar-maneuver-title" id="ar-hud-maneuver-title">Follow 3D Spatial Arrow</div>
+              <div class="ar-maneuver-sub" id="ar-hud-maneuver-sub">Keep device held upright towards walking direction</div>
+            </div>
+          </div>
+
+          <div class="ar-controls-bar">
+            <button class="btn-ar-switch-dest" id="btn-ar-pick-destination">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path><circle cx="12" cy="10" r="3"></circle></svg>
+              Change Destination
+            </button>
+            <button class="btn-ar-simulate-arrival" id="btn-ar-test-arrival" title="Simulate reaching destination for testing">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 14 14"></polyline></svg>
+              Test Arrival
+            </button>
+            <button class="btn-exit-ar" id="btn-exit-ar">
+              Exit AR
+            </button>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ======================================================= -->
+    <!-- VIEW 5: ADMINISTRATOR DASHBOARD                         -->
+    <!-- ======================================================= -->
+    <section id="view-admin" class="view-container">
+      <div class="admin-view-container">
+        <div class="admin-header-bar">
+          <div class="admin-title-group">
+            <h2>Campus Navigation Administrator Portal</h2>
+            <p>Manage campus locations and review the destinations selected by users</p>
+          </div>
+          <div class="admin-header-actions">
+            <span class="admin-user-chip" id="admin-user-chip" title="Signed in administrator">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+              <span id="admin-user-name">Administrator</span>
+            </span>
+            <button class="btn-primary" onclick="window.app.openModal('modal-add-location')">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
+              Add Campus Location
+            </button>
+            <button class="btn-secondary admin-logout-btn" onclick="window.adminManager.logout()">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+              Sign Out
+            </button>
+          </div>
+        </div>
+
+        <!-- Dashboard KPI Metric Cards -->
+        <div class="stats-cards-grid">
+          <div class="stat-card">
+            <div class="stat-icon">
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path><circle cx="12" cy="10" r="3"></circle></svg>
+            </div>
+            <div>
+              <div class="stat-value" id="admin-stat-locations">10</div>
+              <div class="stat-label">Total Locations</div>
+            </div>
+          </div>
+
+          <div class="stat-card">
+            <div class="stat-icon">
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"></polyline></svg>
+            </div>
+            <div>
+              <div class="stat-value" id="admin-stat-arrivals">0</div>
+              <div class="stat-label">Arrivals Reached</div>
+            </div>
+          </div>
+
+          <div class="stat-card">
+            <div class="stat-icon">
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><polygon points="12 6 12 12 14 14"></polygon></svg>
+            </div>
+            <div>
+              <div class="stat-value" id="admin-stat-navigations">0</div>
+              <div class="stat-label">Destination Selections</div>
+            </div>
+          </div>
+
+          <div class="stat-card">
+            <div class="stat-icon">
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path></svg>
+            </div>
+            <div>
+              <div class="stat-value" id="admin-stat-active">10</div>
+              <div class="stat-label">Active Destinations</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Live Socket.IO Telemetry Strip -->
+        <div class="admin-live-strip" id="admin-live-strip">
+          <div class="admin-live-indicator">
+            <span class="pulse-dot"></span> Live Telemetry
+          </div>
+          <div class="admin-live-metric">
+            <strong id="admin-live-users">0</strong> active navigator(s)
+          </div>
+          <div class="admin-live-latest" id="admin-live-latest">Awaiting live navigation events…</div>
+        </div>
+
+        <!-- Admin Section Tabs -->
+        <div class="admin-tabs">
+          <button class="admin-tab-btn active" onclick="switchAdminTab('logs', this)">User Destination History</button>
+          <button class="admin-tab-btn" onclick="switchAdminTab('locations', this)">Campus Locations</button>
+        </div>
+
+        <!-- Tab 1: User Destination History -->
+        <div id="tab-logs" class="tab-pane active">
+          <div class="data-table-wrap">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; gap: 12px; flex-wrap: wrap;">
+              <p style="font-size: 0.8rem; color: var(--text-secondary); margin: 0;">
+                Every destination chosen by a user is persisted here with its navigation mode, status, selection time and starting GPS position.
+              </p>
+              <button class="btn-secondary" onclick="window.adminManager.refreshDestinationHistory()">Refresh History</button>
+            </div>
+            <table class="admin-table">
+              <thead>
+                <tr>
+                  <th>Destination Selected</th>
+                  <th>Mode</th>
+                  <th>Status</th>
+                  <th>Selected At</th>
+                  <th>Starting GPS Position</th>
+                </tr>
+              </thead>
+              <tbody id="admin-logs-tbody">
+                <!-- Injected via admin.js -->
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- Tab 2: Locations Table -->
+        <div id="tab-locations" class="tab-pane">
+          <div class="data-table-wrap">
+            <table class="admin-table">
+              <thead>
+                <tr>
+                  <th>Location Name</th>
+                  <th>Category</th>
+                  <th>Exact Coordinates</th>
+                  <th>Building & Floor</th>
+                  <th>Status</th>
+                  <th>Actions</th>
+                </tr>
+              </thead>
+              <tbody id="admin-locations-tbody">
+                <!-- Injected via admin.js -->
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="footer">
+      <div class="footer-content">
+        <div class="footer-text">
+          <strong>CAMPUS AR NAVIGATION</strong> — Final Year BCA Capstone Project &copy; 2026. Built with Node.js, Express, MongoDB Atlas, and Three.js.
+        </div>
+        <div class="footer-badges">
+          <span class="footer-badge">No QR Codes</span>
+          <span class="footer-badge">No Video Walkthrough</span>
+          <span class="footer-badge">Live WebAR & GPS</span>
+        </div>
+      </div>
+    </footer>
+  </div>
+
+  <!-- ======================================================= -->
+  <!-- AR DESTINATION PICKER MODAL                             -->
+  <!-- ======================================================= -->
+  <div id="modal-ar-destinations" class="modal-overlay">
+    <div class="ar-destinations-modal-box">
+      <div class="ar-modal-header">
+        <div>
+          <h3>
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#00e5ff" stroke-width="2.2"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"></path><circle cx="12" cy="13" r="4"></circle></svg>
+            Select AR Destination
+          </h3>
+          <p>Choose any of the 10 campus destinations to activate live camera feed & 3D directional arrow</p>
+        </div>
+        <button class="hud-close-btn" onclick="window.app.closeModal('modal-ar-destinations')" title="Close">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+        </button>
+      </div>
+
+      <div class="ar-dest-scroll-grid" id="ar-modal-destinations-list">
+        <!-- 1. Wash room -->
+        <div class="ar-dest-pick-card" onclick="window.app.selectARDestination('loc_1')">
+          <div class="ar-pick-top"><div><span style="font-size: 0.72rem; color: var(--electric-blue); font-weight: 800;">DESTINATION #1</span><h4 class="ar-pick-name">Wash room</h4></div><span class="dest-badge">Restroom</span></div>
+          <div class="ar-pick-coords">📍 Lat: 13.337356, Lon: 77.131155</div>
+          <p style="font-size: 0.82rem; color: var(--text-secondary); margin-bottom: 10px; line-height: 1.4;">Main Academic Block • Ground Floor</p>
+          <div class="ar-pick-meta"><div class="ar-pick-dist"><span>Tap to Start AR</span></div><button class="btn-launch-ar-item" type="button">Start AR</button></div>
+        </div>
+
+        <!-- 2. 3rd year BCA class room -->
+        <div class="ar-dest-pick-card" onclick="window.app.selectARDestination('loc_2')">
+          <div class="ar-pick-top"><div><span style="font-size: 0.72rem; color: var(--electric-blue); font-weight: 800;">DESTINATION #2</span><h4 class="ar-pick-name">3rd year BCA class room</h4></div><span class="dest-badge">Academic</span></div>
+          <div class="ar-pick-coords">📍 Lat: 13.336996, Lon: 77.130134</div>
+          <p style="font-size: 0.82rem; color: var(--text-secondary); margin-bottom: 10px; line-height: 1.4;">Computer Applications Wing • 2nd Floor</p>
+          <div class="ar-pick-meta"><div class="ar-pick-dist"><span>Tap to Start AR</span></div><button class="btn-launch-ar-item" type="button">Start AR</button></div>
+        </div>
+
+        <!-- 3. 2nd BCA year class room -->
+        <div class="ar-dest-pick-card" onclick="window.app.selectARDestination('loc_3')">
+          <div class="ar-pick-top"><div><span style="font-size: 0.72rem; color: var(--electric-blue); font-weight: 800;">DESTINATION #3</span><h4 class="ar-pick-name">2nd BCA year class room</h4></div><span class="dest-badge">Academic</span></div>
+          <div class="ar-pick-coords">📍 Lat: 13.336973, Lon: 77.130062</div>
+          <p style="font-size: 0.82rem; color: var(--text-secondary); margin-bottom: 10px; line-height: 1.4;">Computer Applications Wing • 1st Floor</p>
+          <div class="ar-pick-meta"><div class="ar-pick-dist"><span>Tap to Start AR</span></div><button class="btn-launch-ar-item" type="button">Start AR</button></div>
+        </div>
+
+        <!-- 4. 1st year BCA class room -->
+        <div class="ar-dest-pick-card" onclick="window.app.selectARDestination('loc_4')">
+          <div class="ar-pick-top"><div><span style="font-size: 0.72rem; color: var(--electric-blue); font-weight: 800;">DESTINATION #4</span><h4 class="ar-pick-name">1st year BCA class room</h4></div><span class="dest-badge">Academic</span></div>
+          <div class="ar-pick-coords">📍 Lat: 13.336754, Lon: 77.129898</div>
+          <p style="font-size: 0.82rem; color: var(--text-secondary); margin-bottom: 10px; line-height: 1.4;">Computer Applications Wing • Ground Floor</p>
+          <div class="ar-pick-meta"><div class="ar-pick-dist"><span>Tap to Start AR</span></div><button class="btn-launch-ar-item" type="button">Start AR</button></div>
+        </div>
+
+        <!-- 5. Seminar hall -->
+        <div class="ar-dest-pick-card" onclick="window.app.selectARDestination('loc_5')">
+          <div class="ar-pick-top"><div><span style="font-size: 0.72rem; color: var(--electric-blue); font-weight: 800;">DESTINATION #5</span><h4 class="ar-pick-name">Seminar hall</h4></div><span class="dest-badge">Auditorium</span></div>
+          <div class="ar-pick-coords">📍 Lat: 13.336954, Lon: 77.130111</div>
+          <p style="font-size: 0.82rem; color: var(--text-secondary); margin-bottom: 10px; line-height: 1.4;">Central Auditorium Complex • Ground Floor</p>
+          <div class="ar-pick-meta"><div class="ar-pick-dist"><span>Tap to Start AR</span></div><button class="btn-launch-ar-item" type="button">Start AR</button></div>
+        </div>
+
+        <!-- 6. Staff room -->
+        <div class="ar-dest-pick-card" onclick="window.app.selectARDestination('loc_6')">
+          <div class="ar-pick-top"><div><span style="font-size: 0.72rem; color: var(--electric-blue); font-weight: 800;">DESTINATION #6</span><h4 class="ar-pick-name">Staff room</h4></div><span class="dest-badge">Faculty</span></div>
+          <div class="ar-pick-coords">📍 Lat: 13.336816, Lon: 77.130138</div>
+          <p style="font-size: 0.82rem; color: var(--text-secondary); margin-bottom: 10px; line-height: 1.4;">Main Academic Block • 1st Floor</p>
+          <div class="ar-pick-meta"><div class="ar-pick-dist"><span>Tap to Start AR</span></div><button class="btn-launch-ar-item" type="button">Start AR</button></div>
+        </div>
+
+        <!-- 7. Meeting room -->
+        <div class="ar-dest-pick-card" onclick="window.app.selectARDestination('loc_7')">
+          <div class="ar-pick-top"><div><span style="font-size: 0.72rem; color: var(--electric-blue); font-weight: 800;">DESTINATION #7</span><h4 class="ar-pick-name">Meeting room</h4></div><span class="dest-badge">Administrative</span></div>
+          <div class="ar-pick-coords">📍 Lat: 13.337001, Lon: 77.130134</div>
+          <p style="font-size: 0.82rem; color: var(--text-secondary); margin-bottom: 10px; line-height: 1.4;">Administrative Wing • 1st Floor</p>
+          <div class="ar-pick-meta"><div class="ar-pick-dist"><span>Tap to Start AR</span></div><button class="btn-launch-ar-item" type="button">Start AR</button></div>
+        </div>
+
+        <!-- 8. Principal -->
+        <div class="ar-dest-pick-card" onclick="window.app.selectARDestination('loc_8')">
+          <div class="ar-pick-top"><div><span style="font-size: 0.72rem; color: var(--electric-blue); font-weight: 800;">DESTINATION #8</span><h4 class="ar-pick-name">Principal</h4></div><span class="dest-badge">Administrative</span></div>
+          <div class="ar-pick-coords">📍 Lat: 13.337017, Lon: 77.130165</div>
+          <p style="font-size: 0.82rem; color: var(--text-secondary); margin-bottom: 10px; line-height: 1.4;">Administrative Wing • Ground Floor</p>
+          <div class="ar-pick-meta"><div class="ar-pick-dist"><span>Tap to Start AR</span></div><button class="btn-launch-ar-item" type="button">Start AR</button></div>
+        </div>
+
+        <!-- 9. Library -->
+        <div class="ar-dest-pick-card" onclick="window.app.selectARDestination('loc_9')">
+          <div class="ar-pick-top"><div><span style="font-size: 0.72rem; color: var(--electric-blue); font-weight: 800;">DESTINATION #9</span><h4 class="ar-pick-name">Library</h4></div><span class="dest-badge">Resource Center</span></div>
+          <div class="ar-pick-coords">📍 Lat: 13.337043, Lon: 77.130291</div>
+          <p style="font-size: 0.82rem; color: var(--text-secondary); margin-bottom: 10px; line-height: 1.4;">Central Library Block • Ground Floor</p>
+          <div class="ar-pick-meta"><div class="ar-pick-dist"><span>Tap to Start AR</span></div><button class="btn-launch-ar-item" type="button">Start AR</button></div>
+        </div>
+
+        <!-- 10. Academic director office room -->
+        <div class="ar-dest-pick-card" onclick="window.app.selectARDestination('loc_10')">
+          <div class="ar-pick-top"><div><span style="font-size: 0.72rem; color: var(--electric-blue); font-weight: 800;">DESTINATION #10</span><h4 class="ar-pick-name">Academic director office room</h4></div><span class="dest-badge">Administrative</span></div>
+          <div class="ar-pick-coords">📍 Lat: 13.336810, Lon: 77.130165</div>
+          <p style="font-size: 0.82rem; color: var(--text-secondary); margin-bottom: 10px; line-height: 1.4;">Administrative Wing • 1st Floor</p>
+          <div class="ar-pick-meta"><div class="ar-pick-dist"><span>Tap to Start AR</span></div><button class="btn-launch-ar-item" type="button">Start AR</button></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ======================================================= -->
+  <!-- ARRIVAL DETECTION MODAL (EXACT SPECIFICATION REQUIREMENT) -->
+  <!-- ======================================================= -->
+  <div id="modal-arrival" class="modal-overlay">
+    <div class="arrival-modal-box">
+      <div class="arrival-celebration-icon">
+        <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"></polyline></svg>
+      </div>
+      <h2 class="arrival-main-title">DESTINATION REACHED!</h2>
+      <p class="arrival-sub-title">"You have successfully arrived at your destination."</p>
+
+      <div class="arrival-dest-card">
+        <h3 class="arrival-dest-name" id="arrival-dest-name">Destination Point</h3>
+        <p class="arrival-dest-details" id="arrival-dest-details">Main Academic Block • Ground Floor</p>
+      </div>
+
+      <div class="arrival-buttons-group">
+        <button class="btn-primary" id="btn-arrival-another">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+          Navigate to Another Location
+        </button>
+        <button class="btn-secondary" id="btn-arrival-home">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path></svg>
+          Return to Home
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ======================================================= -->
+  <!-- ADMIN LOGIN MODAL                                       -->
+  <!-- ======================================================= -->
+  <div id="modal-admin-login" class="modal-overlay">
+    <div class="arrival-modal-box" style="max-width: 420px; text-align: left;">
+      <h3 style="font-size: 1.4rem; font-weight: 800; color: #fff; margin-bottom: 6px;">Administrator Sign In</h3>
+      <p style="font-size: 0.85rem; color: var(--text-secondary); margin-bottom: 20px;">JWT Protected Campus Management Dashboard</p>
+
+      <form id="admin-login-form">
+        <div class="form-group">
+          <label class="form-label">Username</label>
+          <input type="text" id="admin-login-username" class="form-input" value="admin" required>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Password</label>
+          <input type="password" id="admin-login-password" class="form-input" value="admincampus2026" required>
+        </div>
+        <div style="display: flex; gap: 10px; margin-top: 24px;">
+          <button type="submit" id="admin-login-btn" class="btn-primary" style="flex: 1;">Authenticate</button>
+          <button type="button" class="btn-secondary" onclick="window.app.closeModal('modal-admin-login')">Cancel</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- ======================================================= -->
+  <!-- ADMIN ADD LOCATION MODAL                                -->
+  <!-- ======================================================= -->
+  <div id="modal-add-location" class="modal-overlay">
+    <div class="arrival-modal-box" style="max-width: 520px; text-align: left;">
+      <h3 style="font-size: 1.3rem; font-weight: 800; color: #fff; margin-bottom: 16px;">Add New Campus Location</h3>
+
+      <form id="form-add-location">
+        <div class="form-group">
+          <label class="form-label">Location Name *</label>
+          <input type="text" id="add-loc-name" class="form-input" placeholder="e.g. AI Research Lab" required>
+        </div>
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
+          <div class="form-group">
+            <label class="form-label">Latitude *</label>
+            <input type="number" step="any" id="add-loc-lat" class="form-input" placeholder="13.337000" required>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Longitude *</label>
+            <input type="number" step="any" id="add-loc-lon" class="form-input" placeholder="77.130200" required>
+          </div>
+        </div>
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
+          <div class="form-group">
+            <label class="form-label">Category</label>
+            <select id="add-loc-category" class="form-select">
+              <option value="Academic">Academic</option>
+              <option value="Administrative">Administrative</option>
+              <option value="Faculty">Faculty</option>
+              <option value="Resource Center">Resource Center</option>
+              <option value="Auditorium">Auditorium</option>
+              <option value="Restroom">Restroom</option>
+              <option value="Facility">Facility</option>
+              <option value="Corridor Junction">Corridor Junction</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Floor</label>
+            <input type="text" id="add-loc-floor" class="form-input" value="Ground Floor">
+          </div>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Building Name</label>
+          <input type="text" id="add-loc-building" class="form-input" value="Main Academic Block">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Operational Status</label>
+          <select id="add-loc-status" class="form-select">
+            <option value="active" selected>Active</option>
+            <option value="maintenance">Under Maintenance</option>
+            <option value="closed">Closed</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Visual Landmark Features</label>
+          <input type="text" id="add-loc-landmarks" class="form-input" placeholder="e.g. Blue department banner, wooden double doors (comma separated)">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Description</label>
+          <textarea id="add-loc-desc" class="form-textarea" rows="2" placeholder="Facility description..."></textarea>
+        </div>
+        <div style="display: flex; gap: 10px; margin-top: 20px;">
+          <button type="submit" class="btn-primary" style="flex: 1;">Save Location</button>
+          <button type="button" class="btn-secondary" onclick="window.app.closeModal('modal-add-location')">Cancel</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- ======================================================= -->
+  <!-- ADMIN EDIT LOCATION MODAL                               -->
+  <!-- ======================================================= -->
+  <div id="modal-edit-location" class="modal-overlay">
+    <div class="arrival-modal-box" style="max-width: 520px; text-align: left;">
+      <h3 style="font-size: 1.3rem; font-weight: 800; color: #fff; margin-bottom: 16px;">Edit Campus Location</h3>
+
+      <form id="form-edit-location">
+        <input type="hidden" id="edit-loc-id">
+        <div class="form-group">
+          <label class="form-label">Location Name</label>
+          <input type="text" id="edit-loc-name" class="form-input" required>
+        </div>
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
+          <div class="form-group">
+            <label class="form-label">Latitude</label>
+            <input type="number" step="any" id="edit-loc-lat" class="form-input" required>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Longitude</label>
+            <input type="number" step="any" id="edit-loc-lon" class="form-input" required>
+          </div>
+        </div>
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
+          <div class="form-group">
+            <label class="form-label">Category</label>
+            <select id="edit-loc-category" class="form-select">
+              <option value="Academic">Academic</option>
+              <option value="Administrative">Administrative</option>
+              <option value="Faculty">Faculty</option>
+              <option value="Resource Center">Resource Center</option>
+              <option value="Auditorium">Auditorium</option>
+              <option value="Restroom">Restroom</option>
+              <option value="Facility">Facility</option>
+              <option value="Corridor Junction">Corridor Junction</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Floor</label>
+            <input type="text" id="edit-loc-floor" class="form-input">
+          </div>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Building Name</label>
+          <input type="text" id="edit-loc-building" class="form-input">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Operational Status</label>
+          <select id="edit-loc-status" class="form-select">
+            <option value="active">Active</option>
+            <option value="maintenance">Under Maintenance</option>
+            <option value="closed">Closed</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Visual Landmark Features</label>
+          <input type="text" id="edit-loc-landmarks" class="form-input" placeholder="Comma separated landmark descriptions">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Description</label>
+          <textarea id="edit-loc-desc" class="form-textarea" rows="2"></textarea>
+        </div>
+        <div style="display: flex; gap: 10px; margin-top: 20px;">
+          <button type="submit" class="btn-primary" style="flex: 1;">Update Location</button>
+          <button type="button" class="btn-secondary" onclick="window.app.closeModal('modal-edit-location')">Cancel</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Scripts -->
+  <!-- Runtime backend discovery: resolves the actual API/Socket.IO origin before the app modules connect -->
+  <script src="js/api-config.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.js"></script>
+
+  <!-- Modular Application Engine Scripts -->
+  <script src="js/gps.js"></script>
+  <script src="js/ar.js"></script>
+  <script src="js/navigation.js"></script>
+  <script src="js/admin.js"></script>
+  <script src="js/map.js"></script>
+  <script src="js/app.js"></script>
+
+  <script>
+    // Tab switching in Admin Panel
+    function switchAdminTab(tabName, btnEl) {
+      document.querySelectorAll('.admin-tab-btn').forEach(b => b.classList.remove('active'));
+      document.querySelectorAll('.tab-pane').forEach(p => p.classList.remove('active'));
+      btnEl.classList.add('active');
+      const target = document.getElementById(`tab-${tabName}`);
+      if (target) target.classList.add('active');
+    }
+
+  </script>
+</body>
+</html>
